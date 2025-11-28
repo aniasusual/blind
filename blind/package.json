@@ -1,0 +1,68 @@
+{
+  "name": "blind",
+  "displayName": "blind",
+  "description": "We're building a VS Code extension that transforms debugging from reading static code into watching live execution flows. When developers run their Python code, our tracer captures every function call in real-time and streams it to an interactive graph visualization that builds as the code executes - showing exactly what is run, in what order, how long each takes, and where errors occur. Instead of setting breakpoints and stepping through code line-by-line while mentally reconstructing the execution path, developers see the entire flow as an animated, clickable graph where they can explore any part of the execution, jump directly to problem areas in their code, and understand complex codebases in minutes instead of hours - it's like having x-ray vision into how your code actually runs, making debugging and code comprehension fundamentally visual rather than text-based.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.106.1"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "blind.showFlowVisualizer",
+        "title": "Blind: Show Execution Flow Visualizer"
+      },
+      {
+        "command": "blind.startTraceServer",
+        "title": "Blind: Start Trace Server"
+      },
+      {
+        "command": "blind.stopTraceServer",
+        "title": "Blind: Stop Trace Server"
+      },
+      {
+        "command": "blind.toggleTraceServer",
+        "title": "Blind: Toggle Trace Server"
+      },
+      {
+        "command": "blind.showStatistics",
+        "title": "Blind: Show Trace Statistics"
+      },
+      {
+        "command": "blind.clearEventBuffer",
+        "title": "Blind: Clear Event Buffer"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.106.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.46.3",
+    "eslint": "^9.39.1",
+    "esbuild": "^0.27.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

@@ -1,0 +1,22 @@
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+out/
+.vscode-test/
+*.vsix
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+
+# Editor
+.vscode/
+.DS_Store
