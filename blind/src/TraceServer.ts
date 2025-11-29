@@ -1,6 +1,6 @@
 import * as net from 'net';
 import * as vscode from 'vscode';
-import { FlowVisualizerPanel } from './FlowVisualizerPanel';
+import { FlowVisualizerPanel } from './FlowVisualizerPanelNew';
 
 export interface TraceEvent {
     event_type: string;

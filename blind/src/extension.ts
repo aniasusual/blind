@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { FlowVisualizerPanel } from './FlowVisualizerPanel';
+import { FlowVisualizerPanel } from './FlowVisualizerPanelNew';
 import { TraceServer } from './TraceServer';
 
 let traceServer: TraceServer;

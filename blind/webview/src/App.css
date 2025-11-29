@@ -1,0 +1,362 @@
+:root {
+  --vscode-bg: #1e1e1e;
+  --vscode-fg: #cccccc;
+  --vscode-border: #3c3c3c;
+  --vscode-button-bg: #0e639c;
+  --vscode-button-hover: #1177bb;
+  --vscode-input-bg: #3c3c3c;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  background: var(--vscode-bg);
+  color: var(--vscode-fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #252526;
+  border-bottom: 1px solid var(--vscode-border);
+  flex-shrink: 0;
+}
+
+.toolbar-btn {
+  padding: 6px 12px;
+  background: var(--vscode-button-bg);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.toolbar-btn:hover {
+  background: var(--vscode-button-hover);
+}
+
+.separator {
+  width: 1px;
+  height: 20px;
+  background: var(--vscode-border);
+  margin: 0 5px;
+}
+
+.toolbar-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.toolbar-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.toolbar-stats {
+  margin-left: auto;
+  font-size: 11px;
+  color: #999;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.empty-state h2 {
+  margin-bottom: 10px;
+  color: var(--vscode-fg);
+}
+
+.empty-state p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.empty-hint {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #666;
+}
+
+.empty-hint code {
+  background: #2d2d2d;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+/* Execution Node */
+.execution-node {
+  min-width: 280px;
+  max-width: 400px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #2d2d2d;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.execution-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.execution-node.selected {
+  border-color: var(--vscode-button-bg);
+  box-shadow: 0 4px 16px rgba(14, 99, 156, 0.5);
+}
+
+.execution-node.expanded {
+  max-width: 600px;
+}
+
+/* Node types */
+.execution-node.function_call,
+.execution-node.method_call {
+  background: #2d5a8e;
+  border-left: 4px solid #4a9eff;
+}
+
+.execution-node.function_return,
+.execution-node.method_return {
+  background: #2d5a4e;
+  border-left: 4px solid #4aff9e;
+}
+
+.execution-node.loop_start,
+.execution-node.loop_iteration {
+  background: #6e3d5a;
+  border-left: 4px solid #c74aff;
+}
+
+.execution-node.conditional_if,
+.execution-node.conditional_elif,
+.execution-node.conditional_else {
+  background: #5a4e2d;
+  border-left: 4px solid #ffb84a;
+}
+
+.execution-node.exception_raised {
+  background: #7a2d2d;
+  border-left: 4px solid #ff4a4a;
+}
+
+.execution-node.variable_assignment {
+  background: #2d5a5a;
+  border-left: 4px solid #4affff;
+}
+
+/* Node content */
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.node-icon {
+  font-size: 18px;
+}
+
+.node-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.node-meta {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+  text-transform: capitalize;
+}
+
+.node-content {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'Monaco', 'Menlo', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 4px 0;
+}
+
+.node-timing {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 6px;
+}
+
+/* Node editor */
+.node-editor {
+  margin-top: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: #1e1e1e;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.save-btn {
+  background: #0e639c;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #1177bb;
+}
+
+.cancel-btn {
+  background: #3c3c3c;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #505050;
+}
+
+/* Legend */
+.legend {
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid var(--vscode-border);
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 11px;
+}
+
+.legend-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--vscode-fg);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.legend-color {
+  width: 20px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* React Flow customization */
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: #666;
+  border: 2px solid #999;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid var(--vscode-border);
+}
+
+.react-flow__controls-button {
+  background: rgba(60, 60, 60, 0.95);
+  border-bottom: 1px solid var(--vscode-border);
+  color: var(--vscode-fg);
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(80, 80, 80, 0.95);
+}
+
+.react-flow__minimap {
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid var(--vscode-border);
+}
