@@ -4,38 +4,54 @@ import { getVSCodeAPI } from '../hooks/useVSCode';
 export const Toolbar = () => {
   const {
     isPaused,
-    showAllLines,
     autoScroll,
     togglePause,
-    setShowAllLines,
     setAutoScroll,
-    clearEvents,
+    clearProjectData,
     events,
+    projectFiles,
+    fileExecutionOrder,
   } = useStore();
 
   const vscode = getVSCodeAPI();
 
   const handleClear = () => {
-    clearEvents();
+    if (confirm('Clear all execution data? This cannot be undone.')) {
+      clearProjectData();
+    }
   };
 
   const handleExport = () => {
-    const dataStr = JSON.stringify(events, null, 2);
+    // Export project-wide data
+    const exportData = {
+      files: Array.from(projectFiles.values()).map(file => ({
+        ...file,
+        executedLines: Array.from(file.executedLines),
+      })),
+      fileExecutionOrder,
+      events,
+      timestamp: new Date().toISOString(),
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
     vscode?.postMessage({
       type: 'export',
       data: dataStr,
     });
   };
 
+  const totalLinesExecuted = Array.from(projectFiles.values())
+    .reduce((sum, file) => sum + file.executedLines.size, 0);
+
   return (
     <div className="toolbar">
-      <button className="toolbar-btn" onClick={handleClear} title="Clear graph">
+      <button className="toolbar-btn" onClick={handleClear} title="Clear all data">
         🗑️ Clear
       </button>
       <button className="toolbar-btn" onClick={togglePause} title="Pause/Resume">
         {isPaused ? '▶️ Resume' : '⏸️ Pause'}
       </button>
-      <button className="toolbar-btn" onClick={handleExport} title="Export trace data">
+      <button className="toolbar-btn" onClick={handleExport} title="Export project data">
         💾 Export
       </button>
 
@@ -50,17 +66,14 @@ export const Toolbar = () => {
         Auto-scroll
       </label>
 
-      <label className="toolbar-label">
-        <input
-          type="checkbox"
-          checked={showAllLines}
-          onChange={(e) => setShowAllLines(e.target.checked)}
-        />
-        Show all lines
-      </label>
+      <div className="separator" />
 
       <div className="toolbar-stats">
-        {events.length} events
+        <span className="stat-item">{fileExecutionOrder.length} files</span>
+        <span className="stat-separator">•</span>
+        <span className="stat-item">{totalLinesExecuted} lines executed</span>
+        <span className="stat-separator">•</span>
+        <span className="stat-item">{events.length} events</span>
       </div>
     </div>
   );

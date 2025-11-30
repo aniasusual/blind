@@ -73,6 +73,10 @@ export class FlowVisualizerPanel {
 		});
 	}
 
+	public sendMessage(message: any) {
+		this._panel.webview.postMessage(message);
+	}
+
 	private _handleNodeClick(nodeData: any) {
 		if (nodeData.filePath && nodeData.line) {
 			vscode.workspace.openTextDocument(nodeData.filePath).then(doc => {

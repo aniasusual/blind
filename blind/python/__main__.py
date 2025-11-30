@@ -17,9 +17,9 @@ def main():
         print("  --port PORT    Trace server port (default: 9876)")
         sys.exit(1)
 
-    # Parse arguments
-    host = 'localhost'
-    port = 9876
+    # Parse arguments - defaults from environment variables or fallback values
+    host = os.getenv('BLIND_TRACER_HOST', 'localhost')
+    port = int(os.getenv('BLIND_TRACER_PORT', '9876'))
     script_args = []
     script_path = None
 
@@ -51,13 +51,17 @@ def main():
     # Update sys.argv for the script
     sys.argv = [script_path] + script_args
 
+    # Detect project root (directory containing the script)
+    project_root = os.path.dirname(os.path.abspath(script_path))
+
     print(f"[Blind Tracer] Starting tracer...")
+    print(f"[Blind Tracer] Project root: {project_root}")
     print(f"[Blind Tracer] Connecting to {host}:{port}")
     print(f"[Blind Tracer] Running: {script_path}")
     print("-" * 60)
 
-    # Start tracing
-    tracer = start_tracing(host, port)
+    # Start tracing with project root
+    tracer = start_tracing(host, port, project_root)
 
     try:
         # Run the script

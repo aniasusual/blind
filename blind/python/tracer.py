@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import json
 import socket
@@ -69,14 +70,21 @@ class TraceEvent:
 
 
 class ExecutionTracer:
-    """Comprehensive Python execution tracer"""
+    """Project-wide Python execution tracer with file-level organization"""
 
-    def __init__(self, host='localhost', port=9876):
+    def __init__(self, host='localhost', port=9876, project_root=None):
         self.host = host
         self.port = port
         self.socket = None
         self.event_counter = 0
         self.active = False
+        self.project_root = project_root or os.getcwd()
+
+        # Project-wide tracking
+        self.project_files: Dict[str, Dict] = {}  # filepath -> {code, lines, metadata}
+        self.file_execution_order: List[str] = []  # Order of files accessed
+        self.file_events: Dict[str, List[TraceEvent]] = {}  # filepath -> events
+        self.cross_file_calls: List[Dict] = []  # Track calls between files
 
         # Tracking state
         self.call_stack: List[Dict] = []
@@ -84,6 +92,7 @@ class ExecutionTracer:
         self.event_history: List[TraceEvent] = []
         self.loop_stack: List[Dict] = []
         self.variables_cache: Dict[str, Dict] = {}
+        self.current_file: Optional[str] = None
 
         # Performance tracking
         self.function_timings: Dict[str, List[float]] = {}
@@ -131,6 +140,10 @@ class ExecutionTracer:
     def should_trace_file(self, filename: str) -> bool:
         """Check if file should be traced"""
         if not filename or filename in self.exclude_files:
+            return False
+
+        # Exclude frozen modules (internal Python modules)
+        if filename.startswith('<frozen') or filename.startswith('<'):
             return False
 
         # Exclude standard library and site-packages
@@ -205,6 +218,86 @@ class ExecutionTracer:
             pass
         return variables
 
+    def register_file(self, filepath: str):
+        """Register a file in the project and read its complete code"""
+        if filepath in self.project_files or not self.should_trace_file(filepath):
+            return
+
+        try:
+            with open(filepath, 'r') as f:
+                code = f.read()
+                lines = code.split('\n')
+
+            relative_path = os.path.relpath(filepath, self.project_root)
+
+            self.project_files[filepath] = {
+                'code': code,
+                'lines': lines,
+                'total_lines': len(lines),
+                'relative_path': relative_path,
+                'executed_lines': set(),
+                'first_seen': time.time()
+            }
+
+            self.file_execution_order.append(filepath)
+            self.file_events[filepath] = []
+
+            # Send file registration event to VS Code
+            self.send_file_metadata(filepath)
+
+        except Exception as e:
+            print(f"[Blind Tracer] Error registering file {filepath}: {e}")
+
+    def send_file_metadata(self, filepath: str):
+        """Send complete file metadata and code to VS Code"""
+        if filepath not in self.project_files or not self.active or not self.socket:
+            return
+
+        file_data = self.project_files[filepath]
+        metadata = {
+            'type': 'file_metadata',
+            'file_path': filepath,
+            'relative_path': file_data['relative_path'],
+            'code': file_data['code'],
+            'lines': file_data['lines'],
+            'total_lines': file_data['total_lines'],
+            'timestamp': file_data['first_seen']
+        }
+
+        try:
+            message = json.dumps(metadata) + '\n'
+            self.socket.sendall(message.encode('utf-8'))
+        except Exception as e:
+            print(f"[Blind Tracer] Error sending file metadata: {e}")
+
+    def track_cross_file_call(self, from_file: str, to_file: str, from_event_id: int, to_event_id: int):
+        """Track when execution crosses from one file to another"""
+        if from_file != to_file:
+            cross_call = {
+                'from_file': from_file,
+                'to_file': to_file,
+                'from_event_id': from_event_id,
+                'to_event_id': to_event_id,
+                'timestamp': time.time()
+            }
+            self.cross_file_calls.append(cross_call)
+
+            # Send cross-file call event
+            if self.active and self.socket:
+                try:
+                    message = json.dumps({
+                        'type': 'cross_file_call',
+                        **cross_call
+                    }) + '\n'
+                    self.socket.sendall(message.encode('utf-8'))
+                except:
+                    pass
+
+    def mark_line_executed(self, filepath: str, line_number: int):
+        """Mark a line as executed in a file"""
+        if filepath in self.project_files:
+            self.project_files[filepath]['executed_lines'].add(line_number)
+
     def create_event(
         self,
         event_type: EntityType,
@@ -218,6 +311,22 @@ class ExecutionTracer:
         filename = frame.f_code.co_filename
         line_number = frame.f_lineno
         function_name = frame.f_code.co_name
+
+        # Register file if not already registered
+        self.register_file(filename)
+
+        # Track cross-file call if file changed
+        if self.current_file and self.current_file != filename and self.call_stack:
+            self.track_cross_file_call(
+                self.current_file,
+                filename,
+                self.call_stack[-1]['event_id'],
+                self.event_counter
+            )
+        self.current_file = filename
+
+        # Mark this line as executed
+        self.mark_line_executed(filename, line_number)
 
         # Get class name if in a class method
         class_name = None
@@ -255,6 +364,10 @@ class ExecutionTracer:
 
         self.event_history.append(event)
         self.last_event_time = current_time
+
+        # Store event in file-specific list
+        if filename in self.file_events:
+            self.file_events[filename].append(event)
 
         return event
 
@@ -447,10 +560,10 @@ class ExecutionTracer:
 _tracer_instance: Optional[ExecutionTracer] = None
 
 
-def start_tracing(host='localhost', port=9876):
+def start_tracing(host='localhost', port=9876, project_root=None):
     """Start execution tracing"""
     global _tracer_instance
-    _tracer_instance = ExecutionTracer(host, port)
+    _tracer_instance = ExecutionTracer(host, port, project_root)
     _tracer_instance.start_tracing()
     return _tracer_instance
 

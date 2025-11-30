@@ -19,6 +19,39 @@ export interface TraceEvent {
   called_from?: number;
 }
 
+// File Metadata - sent when a new file is encountered during execution
+export interface FileMetadata {
+  type: 'file_metadata';
+  file_path: string;
+  relative_path: string;
+  code: string;
+  lines: string[];
+  total_lines: number;
+  timestamp: number;
+}
+
+// Cross-File Call - sent when execution flows from one file to another
+export interface CrossFileCall {
+  type: 'cross_file_call';
+  from_file: string;
+  to_file: string;
+  from_event_id: number;
+  to_event_id: number;
+  timestamp: number;
+}
+
+// Project File Data - for storing complete file information
+export interface ProjectFile {
+  filePath: string;
+  relativePath: string;
+  code: string;
+  lines: string[];
+  totalLines: number;
+  executedLines: Set<number>;
+  events: TraceEvent[];
+  firstSeen: number;
+}
+
 // VS Code API Types
 export interface VSCodeAPI {
   postMessage(message: any): void;
@@ -29,6 +62,8 @@ export interface VSCodeAPI {
 // Message Types
 export type MessageType =
   | 'traceData'
+  | 'fileMetadata'
+  | 'crossFileCall'
   | 'codeChanged'
   | 'fileUpdated'
   | 'nodeClicked'

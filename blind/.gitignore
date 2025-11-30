@@ -1,0 +1,24 @@
+# Python
+venv/
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Node
+node_modules/
+out/
+dist-webview/
+
+# VS Code
+.vscode/
+*.vsix
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store

@@ -155,30 +155,79 @@ export class TraceServer {
 
     private handleTraceEvent(message: string): void {
         try {
-            const event: TraceEvent = JSON.parse(message);
-            this.totalEvents++;
-            this.eventBuffer.push(event);
+            const data = JSON.parse(message);
 
-            // Send to visualizer if open
-            if (FlowVisualizerPanel.currentPanel) {
-                FlowVisualizerPanel.currentPanel.sendTraceData(event);
-            }
+            // Handle different message types
+            if (data.type === 'file_metadata') {
+                // File metadata message
+                this.handleFileMetadata(data);
+            } else if (data.type === 'cross_file_call') {
+                // Cross-file call message
+                this.handleCrossFileCall(data);
+            } else {
+                // Regular trace event
+                const event: TraceEvent = data;
+                this.totalEvents++;
+                this.eventBuffer.push(event);
 
-            // Update status bar
-            if (this.totalEvents % 10 === 0) {
-                this.updateStatusBar();
-            }
+                // Send to visualizer if open
+                if (FlowVisualizerPanel.currentPanel) {
+                    FlowVisualizerPanel.currentPanel.sendTraceData(event);
+                }
 
-            // Log interesting events
-            if (event.event_type === 'exception_raised') {
-                const excData = event.entity_data;
-                vscode.window.showWarningMessage(
-                    `Exception: ${excData.exception_type}: ${excData.exception_message}`
-                );
+                // Update status bar
+                if (this.totalEvents % 10 === 0) {
+                    this.updateStatusBar();
+                }
+
+                // Log interesting events
+                if (event.event_type === 'exception_raised') {
+                    const excData = event.entity_data;
+                    vscode.window.showWarningMessage(
+                        `Exception: ${excData.exception_type}: ${excData.exception_message}`
+                    );
+                }
             }
 
         } catch (err) {
             console.error('Error parsing trace event:', err);
+        }
+    }
+
+    private handleFileMetadata(data: any): void {
+        console.log(`[Blind] File registered: ${data.relative_path} (${data.total_lines} lines)`);
+
+        // Send to visualizer if open
+        if (FlowVisualizerPanel.currentPanel) {
+            FlowVisualizerPanel.currentPanel.sendMessage({
+                type: 'fileMetadata',
+                data: {
+                    file_path: data.file_path,
+                    relative_path: data.relative_path,
+                    code: data.code,
+                    lines: data.lines,
+                    total_lines: data.total_lines,
+                    timestamp: data.timestamp
+                }
+            });
+        }
+    }
+
+    private handleCrossFileCall(data: any): void {
+        console.log(`[Blind] Cross-file call: ${data.from_file} → ${data.to_file}`);
+
+        // Send to visualizer if open
+        if (FlowVisualizerPanel.currentPanel) {
+            FlowVisualizerPanel.currentPanel.sendMessage({
+                type: 'crossFileCall',
+                data: {
+                    from_file: data.from_file,
+                    to_file: data.to_file,
+                    from_event_id: data.from_event_id,
+                    to_event_id: data.to_event_id,
+                    timestamp: data.timestamp
+                }
+            });
         }
     }
 
