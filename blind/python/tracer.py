@@ -68,6 +68,11 @@ class TraceEvent:
     calls_to: Optional[List[int]] = None
     called_from: Optional[int] = None
 
+    # Call context
+    variables: Optional[Dict[str, Any]] = None
+    arguments: Optional[Dict[str, Any]] = None
+    return_value: Optional[Any] = None
+
 
 class ExecutionTracer:
     """Project-wide Python execution tracer with file-level organization"""
@@ -423,6 +428,9 @@ class ExecutionTracer:
 
         event = self.create_event(entity_type, frame, entity_data)
 
+        # Populate top-level arguments field
+        event.arguments = args_info
+
         # Track in call stack
         self.call_stack.append({
             'event_id': event.event_id,
@@ -477,6 +485,10 @@ class ExecutionTracer:
         }
 
         event = self.create_event(entity_type, frame, entity_data)
+
+        # Populate top-level variables field
+        event.variables = variables
+
         self.send_event(event)
 
     def handle_return(self, frame, return_value):
@@ -502,6 +514,7 @@ class ExecutionTracer:
 
         event = self.create_event(entity_type, frame, entity_data)
         event.execution_time = execution_time
+        event.return_value = repr(return_value)[:200] if return_value is not None else 'None'
 
         self.send_event(event)
 

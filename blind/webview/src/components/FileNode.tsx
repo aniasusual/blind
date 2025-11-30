@@ -1,6 +1,7 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { ProjectFile } from '../types';
+import { ProjectFile, TraceEvent } from '../types';
+import { useStore } from '../store/useStore';
 import './FileNode.css';
 
 interface FileNodeProps {
@@ -14,6 +15,7 @@ interface FileNodeProps {
 
 export const FileNode = memo(({ data }: FileNodeProps) => {
   const { file, isSelected, onSelect, onLineClick } = data;
+  const { events, currentEventIndex } = useStore();
 
   const coverage = file.totalLines > 0
     ? Math.round((file.executedLines.size / file.totalLines) * 100)
@@ -25,6 +27,38 @@ export const FileNode = memo(({ data }: FileNodeProps) => {
     if (coverage > 40) return '#ffb84a';
     return '#ff4a4a';
   };
+
+  // Build a map of line numbers to their execution sequence and event info
+  const lineExecutionInfo = useMemo(() => {
+    const info = new Map<number, { sequence: number; event: TraceEvent; isActive: boolean }[]>();
+
+    // Get events up to current playback index (or all if not playing back)
+    const visibleEvents = currentEventIndex >= 0
+      ? events.slice(0, currentEventIndex + 1)
+      : events;
+
+    visibleEvents.forEach((event, index) => {
+      if (event.file_path === file.filePath) {
+        const lineNumber = event.line_number;
+        if (!info.has(lineNumber)) {
+          info.set(lineNumber, []);
+        }
+        info.get(lineNumber)!.push({
+          sequence: index + 1,
+          event,
+          isActive: index === currentEventIndex,
+        });
+      }
+    });
+
+    return info;
+  }, [events, currentEventIndex, file.filePath]);
+
+  // Get the current active line
+  const currentEvent = currentEventIndex >= 0 ? events[currentEventIndex] : null;
+  const currentActiveLine = currentEvent?.file_path === file.filePath
+    ? currentEvent.line_number
+    : null;
 
   return (
     <div
@@ -52,29 +86,40 @@ export const FileNode = memo(({ data }: FileNodeProps) => {
 
       {/* File Code Preview */}
       <div className="file-node-code">
-        {file.lines.slice(0, 20).map((line, index) => {
+        {file.lines.map((line, index) => {
           const lineNumber = index + 1;
-          const isExecuted = file.executedLines.has(lineNumber);
+          const execInfo = lineExecutionInfo.get(lineNumber);
+          const isExecuted = execInfo && execInfo.length > 0;
+          const isActive = lineNumber === currentActiveLine;
+          const sequences = execInfo ? execInfo.map(e => e.sequence) : [];
 
           return (
             <div
               key={lineNumber}
-              className={`code-line ${isExecuted ? 'executed' : ''}`}
+              className={`code-line ${isExecuted ? 'executed' : ''} ${isActive ? 'active' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onLineClick(lineNumber);
               }}
+              title={isExecuted ? `Executed ${sequences.length} time(s): #${sequences.join(', #')}` : undefined}
             >
               <span className="line-number">{lineNumber}</span>
               <span className="line-content">{line || ' '}</span>
+              {isExecuted && (
+                <span className="execution-sequences">
+                  {sequences.map((seq, i) => (
+                    <span
+                      key={i}
+                      className={`sequence-badge ${execInfo![i].isActive ? 'active-sequence' : ''}`}
+                    >
+                      #{seq}
+                    </span>
+                  ))}
+                </span>
+              )}
             </div>
           );
         })}
-        {file.lines.length > 20 && (
-          <div className="code-line-more">
-            ... {file.lines.length - 20} more lines
-          </div>
-        )}
       </div>
 
       {/* File Footer */}

@@ -17,6 +17,9 @@ export interface TraceEvent {
   memory_delta?: number;
   calls_to?: number[];
   called_from?: number;
+  variables?: Record<string, any>;
+  arguments?: Record<string, any>;
+  return_value?: any;
 }
 
 // File Metadata - sent when a new file is encountered during execution

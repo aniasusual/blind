@@ -16,6 +16,11 @@ interface EnhancedAppState {
   crossFileCalls: CrossFileCall[];
   selectedFile: string | null;
 
+  // Playback state
+  currentEventIndex: number;
+  isPlaying: boolean;
+  playbackSpeed: number;
+
   // Original actions
   addEvent: (event: TraceEvent) => void;
   clearEvents: () => void;
@@ -30,6 +35,15 @@ interface EnhancedAppState {
   markLineExecuted: (filePath: string, lineNumber: number) => void;
   setSelectedFile: (filePath: string | null) => void;
   clearProjectData: () => void;
+
+  // Playback actions
+  setCurrentEventIndex: (index: number) => void;
+  togglePlayback: () => void;
+  setPlaybackSpeed: (speed: number) => void;
+  stepForward: () => void;
+  stepBackward: () => void;
+  goToStart: () => void;
+  goToEnd: () => void;
 }
 
 export const useStore = create<EnhancedAppState>()((set, get) => ({
@@ -45,6 +59,11 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
   fileExecutionOrder: [],
   crossFileCalls: [],
   selectedFile: null,
+
+  // Playback state
+  currentEventIndex: -1,
+  isPlaying: false,
+  playbackSpeed: 1,
 
   // Original actions
   addEvent: (event: TraceEvent) => {
@@ -142,5 +161,41 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
       crossFileCalls: [],
       selectedNodeId: null,
       selectedFile: null,
+      currentEventIndex: -1,
+      isPlaying: false,
     }),
+
+  // Playback actions
+  setCurrentEventIndex: (index: number) => {
+    const state = get();
+    const maxIndex = state.events.length - 1;
+    const clampedIndex = Math.max(-1, Math.min(index, maxIndex));
+    set({ currentEventIndex: clampedIndex });
+  },
+
+  togglePlayback: () =>
+    set((state) => ({ isPlaying: !state.isPlaying })),
+
+  setPlaybackSpeed: (speed: number) =>
+    set({ playbackSpeed: speed }),
+
+  stepForward: () => {
+    const state = get();
+    const newIndex = Math.min(state.currentEventIndex + 1, state.events.length - 1);
+    set({ currentEventIndex: newIndex });
+  },
+
+  stepBackward: () => {
+    const state = get();
+    const newIndex = Math.max(state.currentEventIndex - 1, -1);
+    set({ currentEventIndex: newIndex });
+  },
+
+  goToStart: () =>
+    set({ currentEventIndex: -1, isPlaying: false }),
+
+  goToEnd: () => {
+    const state = get();
+    set({ currentEventIndex: state.events.length - 1, isPlaying: false });
+  },
 }));

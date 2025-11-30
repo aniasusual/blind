@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { Toolbar } from './components/Toolbar';
 import { FlowCanvas } from './components/FlowCanvas';
+import { Timeline } from './components/Timeline';
+import { CallStack } from './components/CallStack';
+import { Inspector } from './components/Inspector';
 import { useStore } from './store/useStore';
 import { useVSCode } from './hooks/useVSCode';
 import { Message, TraceEvent, FileMetadata, CrossFileCall } from './types';
@@ -65,8 +68,11 @@ function App() {
     <div className="app">
       <Toolbar />
       <div className="main-content">
+        <CallStack />
         <FlowCanvas />
+        <Inspector />
       </div>
+      <Timeline />
     </div>
   );
 }

@@ -13,6 +13,10 @@ export function activate(context: vscode.ExtensionContext) {
 		'blind.showFlowVisualizer',
 		() => {
 			FlowVisualizerPanel.createOrShow(context.extensionUri);
+			// Automatically start the trace server when visualizer is opened
+			if (!traceServer.getIsRunning()) {
+				traceServer.start();
+			}
 		}
 	);
 

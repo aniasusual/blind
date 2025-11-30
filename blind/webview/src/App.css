@@ -91,11 +91,14 @@ body, html, #root {
   color: #555;
 }
 
-/* Main content */
+/* Main content - Three panel layout */
 .main-content {
   flex: 1;
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 48px - 120px); /* viewport - toolbar - timeline */
 }
 
 /* Empty state */

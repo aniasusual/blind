@@ -1,0 +1,212 @@
+.call-stack-panel {
+  width: 320px;
+  height: 100%;
+  background: var(--vscode-sideBar-background, #252526);
+  border-right: 1px solid var(--vscode-panel-border, #3c3c3c);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.call-stack-header {
+  padding: 12px 16px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.call-stack-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stack-count {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground, #999);
+  background: var(--vscode-badge-background, #4d4d4d);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.call-stack-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--vscode-descriptionForeground, #999);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.call-stack-empty p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.empty-hint {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.call-stack-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.stack-frame {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.stack-frame:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stack-frame.active-frame {
+  background: rgba(14, 99, 156, 0.2);
+  border-left-color: var(--vscode-button-background, #0e639c);
+}
+
+.stack-frame.active-frame .frame-indicator {
+  color: var(--vscode-button-background, #0e639c);
+  font-size: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.frame-indicator {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vscode-descriptionForeground, #999);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.frame-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.frame-function {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  font-family: var(--vscode-editor-font-family, monospace);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.frame-location {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground, #999);
+  font-family: var(--vscode-editor-font-family, monospace);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.frame-file {
+  color: var(--vscode-descriptionForeground, #999);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.frame-separator {
+  color: var(--vscode-panel-border, #3c3c3c);
+}
+
+.frame-line {
+  color: var(--vscode-button-background, #0e639c);
+  font-weight: 600;
+}
+
+.frame-depth {
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground, #999);
+  background: var(--vscode-input-background, #3c3c3c);
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Current Event Info */
+.current-event-info {
+  padding: 12px 16px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-top: 1px solid var(--vscode-panel-border, #3c3c3c);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.info-label {
+  color: var(--vscode-descriptionForeground, #999);
+  font-weight: 500;
+}
+
+.info-value {
+  color: var(--vscode-foreground, #cccccc);
+  font-weight: 600;
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.event-type-badge {
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+/* Scrollbar */
+.call-stack-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.call-stack-list::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, #424242);
+}
+
+.call-stack-list::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-hoverBackground, #4f4f4f);
+  border-radius: 4px;
+}
+
+.call-stack-list::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-activeBackground, #646464);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

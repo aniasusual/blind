@@ -41,6 +41,10 @@ export class TraceServer {
         this.statusBarItem.show();
     }
 
+    public getIsRunning(): boolean {
+        return this.isRunning;
+    }
+
     async start(): Promise<boolean> {
         if (this.isRunning) {
             vscode.window.showInformationMessage('Trace server is already running');

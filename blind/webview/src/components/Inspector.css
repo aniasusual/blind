@@ -1,0 +1,245 @@
+.inspector-panel {
+  width: 360px;
+  height: 100%;
+  background: var(--vscode-sideBar-background, #252526);
+  border-left: 1px solid var(--vscode-panel-border, #3c3c3c);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.inspector-header {
+  padding: 12px 16px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inspector-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inspector-badge {
+  font-size: 11px;
+  color: var(--vscode-badge-foreground, #ffffff);
+  background: var(--vscode-button-background, #0e639c);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.inspector-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--vscode-descriptionForeground, #999);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.inspector-empty p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.empty-hint {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.inspector-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+/* Sections */
+.inspector-section {
+  margin-bottom: 16px;
+  padding: 0 16px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+  margin-bottom: 8px;
+}
+
+.section-icon {
+  font-size: 14px;
+}
+
+.variable-count {
+  margin-left: auto;
+  font-size: 10px;
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Info Items */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.item-label {
+  color: var(--vscode-descriptionForeground, #999);
+  font-weight: 500;
+}
+
+.item-value {
+  color: var(--vscode-foreground, #cccccc);
+  font-weight: 600;
+  font-family: var(--vscode-editor-font-family, monospace);
+  text-align: right;
+}
+
+.code-value {
+  color: #dcdcaa;
+}
+
+.event-type-badge {
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.file-path {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.full-path {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px;
+  background: var(--vscode-input-background, #3c3c3c);
+}
+
+.full-path-value {
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground, #999);
+  font-family: var(--vscode-editor-font-family, monospace);
+  word-break: break-all;
+}
+
+/* Variables */
+.variables-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.variable-item {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  border-left: 3px solid var(--vscode-panel-border, #3c3c3c);
+}
+
+.variable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.variable-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.variable-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.variable-value {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground, #999);
+  font-family: var(--vscode-editor-font-family, monospace);
+  padding: 6px;
+  background: var(--vscode-input-background, #3c3c3c);
+  border-radius: 3px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.no-data {
+  text-align: center;
+  color: var(--vscode-descriptionForeground, #999);
+  font-size: 11px;
+  font-style: italic;
+  padding: 16px;
+}
+
+/* Scrollbar */
+.inspector-content::-webkit-scrollbar,
+.variables-content::-webkit-scrollbar,
+.variable-value::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.inspector-content::-webkit-scrollbar-track,
+.variables-content::-webkit-scrollbar-track,
+.variable-value::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, #424242);
+}
+
+.inspector-content::-webkit-scrollbar-thumb,
+.variables-content::-webkit-scrollbar-thumb,
+.variable-value::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-hoverBackground, #4f4f4f);
+  border-radius: 3px;
+}
+
+.inspector-content::-webkit-scrollbar-thumb:hover,
+.variables-content::-webkit-scrollbar-thumb:hover,
+.variable-value::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-activeBackground, #646464);
+}
