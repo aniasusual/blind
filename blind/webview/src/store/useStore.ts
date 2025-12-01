@@ -15,6 +15,7 @@ interface EnhancedAppState {
   fileExecutionOrder: string[];
   crossFileCalls: CrossFileCall[];
   selectedFile: string | null;
+  selectedEdge: string | null;
 
   // Playback state
   currentEventIndex: number;
@@ -34,6 +35,7 @@ interface EnhancedAppState {
   addCrossFileCall: (call: CrossFileCall) => void;
   markLineExecuted: (filePath: string, lineNumber: number) => void;
   setSelectedFile: (filePath: string | null) => void;
+  setSelectedEdge: (edgeId: string | null) => void;
   clearProjectData: () => void;
 
   // Playback actions
@@ -59,6 +61,7 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
   fileExecutionOrder: [],
   crossFileCalls: [],
   selectedFile: null,
+  selectedEdge: null,
 
   // Playback state
   currentEventIndex: -1,
@@ -153,6 +156,9 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
   setSelectedFile: (filePath: string | null) =>
     set({ selectedFile: filePath }),
 
+  setSelectedEdge: (edgeId: string | null) =>
+    set({ selectedEdge: edgeId }),
+
   clearProjectData: () =>
     set({
       events: [],
@@ -161,6 +167,7 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
       crossFileCalls: [],
       selectedNodeId: null,
       selectedFile: null,
+      selectedEdge: null,
       currentEventIndex: -1,
       isPlaying: false,
     }),

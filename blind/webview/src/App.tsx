@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Toolbar } from './components/Toolbar';
 import { FlowCanvas } from './components/FlowCanvas';
 import { Timeline } from './components/Timeline';
 import { CallStack } from './components/CallStack';
@@ -66,7 +65,6 @@ function App() {
   console.log('🎨 App returning JSX');
   return (
     <div className="app">
-      <Toolbar />
       <div className="main-content">
         <CallStack />
         <FlowCanvas />

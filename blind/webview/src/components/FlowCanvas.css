@@ -346,3 +346,27 @@
   height: 16px;
   border-radius: 3px;
 }
+
+/* Enhanced Animated Edge Styling */
+@keyframes edgePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes edgeGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px #00ff88) drop-shadow(0 0 10px #00ff88);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px #00ff88) drop-shadow(0 0 20px #00ff88) drop-shadow(0 0 30px rgba(0, 255, 136, 0.5));
+  }
+}
+
+/* Override React Flow edge styles for active edges */
+.react-flow__edge-path[stroke="#00ff88"] {
+  animation: edgePulse 1s ease-in-out infinite;
+}
