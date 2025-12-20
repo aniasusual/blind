@@ -2,7 +2,7 @@
   "name": "blind",
   "displayName": "blind",
   "description": "We're building a VS Code extension that transforms debugging from reading static code into watching live execution flows. When developers run their Python code, our tracer captures every function call in real-time and streams it to an interactive graph visualization that builds as the code executes - showing exactly what is run, in what order, how long each takes, and where errors occur. Instead of setting breakpoints and stepping through code line-by-line while mentally reconstructing the execution path, developers see the entire flow as an animated, clickable graph where they can explore any part of the execution, jump directly to problem areas in their code, and understand complex codebases in minutes instead of hours - it's like having x-ray vision into how your code actually runs, making debugging and code comprehension fundamentally visual rather than text-based.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.106.1"
   },

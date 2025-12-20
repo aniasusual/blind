@@ -11,6 +11,8 @@ interface StackFrame {
 export const CallStack = () => {
   const { events, currentEventIndex } = useStore();
 
+  console.log(`[CallStack] Rendering with ${events.length} events, currentIndex: ${currentEventIndex}`);
+
   // Build call stack for current event
   const callStack = useMemo(() => {
     if (currentEventIndex < 0 || events.length === 0) {
@@ -18,41 +20,62 @@ export const CallStack = () => {
     }
 
     const currentEvent = events[currentEventIndex];
-    const stack: StackFrame[] = [];
-    const eventMap = new Map<number, TraceEvent>();
-
-    // Build event map for quick lookup
-    events.slice(0, currentEventIndex + 1).forEach((event, index) => {
-      eventMap.set(index, event);
+    console.log('[CallStack] Current event:', {
+      type: currentEvent.event_type,
+      func: currentEvent.function_name,
+      line: currentEvent.line_number,
+      parent_id: currentEvent.parent_event_id,
+      event_id: currentEvent.event_id,
     });
 
-    // Build stack by traversing parent relationships
-    let depth = 0;
-    let currentIdx = currentEventIndex;
-    const visited = new Set<number>();
+    const stack: StackFrame[] = [];
 
-    while (currentIdx >= 0 && !visited.has(currentIdx)) {
-      visited.add(currentIdx);
-      const event = eventMap.get(currentIdx);
+    // Build call stack based on call_stack_depth
+    // Group events by depth and find the active function calls
+    const callEvents = events.slice(0, currentEventIndex + 1).filter(e => e.event_type === 'function_call');
+    console.log('[CallStack] Found function_call events:', callEvents.length);
 
-      if (!event) break;
+    if (callEvents.length > 0) {
+      console.log('[CallStack] Sample call event:', {
+        type: callEvents[0].event_type,
+        func: callEvents[0].function_name,
+        depth: callEvents[0].call_stack_depth,
+        parent_id: callEvents[0].parent_event_id,
+      });
+    }
 
-      // Only include 'call' events in the stack
-      if (event.event_type === 'call') {
-        stack.unshift({
-          event,
-          depth,
-        });
-        depth++;
+    // Build stack by collecting all 'function_call' events up to current depth
+    const currentDepth = currentEvent.call_stack_depth;
+
+    // Find active calls at each depth level
+    const depthMap = new Map<number, TraceEvent>();
+
+    for (let i = currentEventIndex; i >= 0; i--) {
+      const event = events[i];
+      const depth = event.call_stack_depth;
+
+      // Only consider 'function_call' events
+      if (event.event_type === 'function_call' && !depthMap.has(depth) && depth <= currentDepth) {
+        depthMap.set(depth, event);
       }
 
-      // Move to parent event
-      if (event.parent_event_id !== undefined && event.parent_event_id >= 0) {
-        currentIdx = event.parent_event_id;
-      } else {
+      // Stop if we've found all depths
+      if (depthMap.size === currentDepth + 1) {
         break;
       }
     }
+
+    // Convert to sorted stack
+    const depths = Array.from(depthMap.keys()).sort((a, b) => a - b);
+    depths.forEach(depth => {
+      const event = depthMap.get(depth)!;
+      stack.push({
+        event,
+        depth,
+      });
+    });
+
+    console.log('[CallStack] Built stack with', stack.length, 'frames');
 
     return stack;
   }, [events, currentEventIndex]);

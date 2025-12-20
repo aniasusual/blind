@@ -37,12 +37,13 @@ class EntityType(Enum):
 
 @dataclass
 class TraceEvent:
-    """Complete trace event with all metadata"""
+    """Complete trace event with all metadata (Language-Agnostic Protocol)"""
+    # Event identification (required fields)
     event_type: str  # EntityType value
     timestamp: float
     event_id: int
 
-    # Location information
+    # Location information (universal across languages)
     file_path: str
     line_number: int
     function_name: str
@@ -52,15 +53,19 @@ class TraceEvent:
     # Code context
     line_content: str
 
-    # Execution context
+    # Execution context (stack trace)
     call_stack_depth: int
     parent_event_id: Optional[int]
     scope_id: str
 
-    # Entity-specific data
+    # Language-specific data (flexible)
     entity_data: Dict[str, Any]
 
-    # Performance metrics
+    # Protocol metadata (fields with defaults must come after required fields)
+    language: str = 'python'  # Language identifier for multi-language support
+    protocol_version: str = '1.0.0'  # Protocol version
+
+    # Performance metrics (optional)
     execution_time: Optional[float] = None
     memory_delta: Optional[int] = None
 
@@ -68,10 +73,13 @@ class TraceEvent:
     calls_to: Optional[List[int]] = None
     called_from: Optional[int] = None
 
-    # Call context
+    # Runtime data (optional)
     variables: Optional[Dict[str, Any]] = None
     arguments: Optional[Dict[str, Any]] = None
     return_value: Optional[Any] = None
+
+    # Optional: column number (for languages that support it)
+    column_number: Optional[int] = None
 
 
 class ExecutionTracer:

@@ -2,26 +2,69 @@ import * as net from 'net';
 import * as vscode from 'vscode';
 import { FlowVisualizerPanel } from './FlowVisualizerPanelNew';
 
+/**
+ * Language-Agnostic Trace Event Protocol
+ *
+ * This interface defines the universal protocol for trace events from any language.
+ * Language-specific tracers (Python, JavaScript, Go, Java, etc.) must conform to this protocol.
+ *
+ * Supported Languages: Python, JavaScript, TypeScript, Go, Java, Rust, C++
+ */
 export interface TraceEvent {
+    // Protocol metadata (added for multi-language support)
+    language?: 'python' | 'javascript' | 'typescript' | 'go' | 'java' | 'rust' | 'cpp';
+    protocol_version?: string;
+
+    // Event identification (universal)
     event_type: string;
     timestamp: number;
     event_id: number;
+
+    // Location (universal across all languages)
     file_path: string;
     line_number: number;
+    column_number?: number;
+
+    // Context (universal across all languages)
     function_name: string;
     class_name: string | null;
     module_name: string;
     line_content: string;
+
+    // Stack trace (universal)
     call_stack_depth: number;
     parent_event_id: number | null;
     scope_id: string;
+
+    // Language-specific data (flexible, varies by language)
     entity_data: any;
+
+    // Performance metrics (optional, language-agnostic)
     execution_time?: number;
     memory_delta?: number;
+
+    // Relationships (optional)
     calls_to?: number[];
     called_from?: number;
 }
 
+/**
+ * Language-Agnostic Trace Server
+ *
+ * This server accepts trace events from any language tracer that implements
+ * the Blind trace protocol. It forwards events to the visualizer webview.
+ *
+ * Architecture:
+ * - Extension (Node.js): This TraceServer (language-agnostic)
+ * - Tracers: Language-specific packages (blind-python, blind-js, blind-go, etc.)
+ * - Protocol: JSON-based events over TCP socket (port 9876)
+ *
+ * Future Language Support:
+ * - Python: ✅ Implemented (blind-python package)
+ * - JavaScript/TypeScript: 🔜 Coming soon
+ * - Go: 🔜 Coming soon
+ * - Java: 🔜 Coming soon
+ */
 export class TraceServer {
     private server: net.Server | null = null;
     private clients: Set<net.Socket> = new Set();

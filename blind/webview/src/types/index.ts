@@ -1,22 +1,45 @@
-// Trace Event Types
+// Supported Languages
+export type Language = 'python' | 'javascript' | 'typescript' | 'go' | 'java' | 'rust' | 'cpp';
+
+// Trace Event Types (Language-Agnostic Protocol)
 export interface TraceEvent {
+  // Protocol version and language
+  language: Language;
+  protocol_version?: string;
+
+  // Event identification
   event_type: string;
   timestamp: number;
   event_id: number;
+
+  // Location (universal across languages)
   file_path: string;
   line_number: number;
+  column_number?: number;
+
+  // Context (universal across languages)
   function_name: string;
   class_name: string | null;
   module_name: string;
   line_content: string;
+
+  // Stack trace
   call_stack_depth: number;
   parent_event_id: number | null;
   scope_id: string;
+
+  // Language-specific data (flexible)
   entity_data: Record<string, any>;
+
+  // Performance metrics (optional)
   execution_time?: number;
   memory_delta?: number;
+
+  // Relationships
   calls_to?: number[];
   called_from?: number;
+
+  // Runtime data (optional)
   variables?: Record<string, any>;
   arguments?: Record<string, any>;
   return_value?: any;

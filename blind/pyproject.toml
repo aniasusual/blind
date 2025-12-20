@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "blind"
-version = "0.1.0"
-description = "Project-wide Python execution flow visualizer for VS Code"
+name = "blind-python"
+version = "1.0.0"
+description = "Python execution tracer for Blind - Multi-language execution flow visualizer"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
@@ -24,4 +24,4 @@ dev = [
 packages = ["blind"]
 
 [tool.setuptools.package-dir]
-blind = "python"
+blind = "tracers/python"

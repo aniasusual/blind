@@ -10,12 +10,20 @@ from .tracer import start_tracing, stop_tracing
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python -m blind.python <script.py> [args...]")
+    # Check for help flag
+    if len(sys.argv) < 2 or '--help' in sys.argv or '-h' in sys.argv:
+        print("Usage: python -m blind <script.py> [args...]")
         print("\nOptions:")
         print("  --host HOST    Trace server host (default: localhost)")
         print("  --port PORT    Trace server port (default: 9876)")
-        sys.exit(1)
+        print("  --help, -h     Show this help message")
+        print("\nExample:")
+        print("  python -m blind your_script.py")
+        print("  python -m blind --host localhost --port 9876 your_script.py")
+        print("\nEnvironment Variables:")
+        print("  BLIND_TRACER_HOST    Default host (default: localhost)")
+        print("  BLIND_TRACER_PORT    Default port (default: 9876)")
+        sys.exit(0 if '--help' in sys.argv or '-h' in sys.argv else 1)
 
     # Parse arguments - defaults from environment variables or fallback values
     host = os.getenv('BLIND_TRACER_HOST', 'localhost')
