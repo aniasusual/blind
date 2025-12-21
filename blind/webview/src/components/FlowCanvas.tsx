@@ -55,9 +55,10 @@ export const FlowCanvas = () => {
     const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
 
-    // Track edge call counts and identify loops
+    // Track edge information: counts, function names, and sequences
     const edgeCallCounts = new Map<string, number>();
     const edgeCallSequences = new Map<string, number[]>();
+    const edgeFunctionNames = new Map<string, Set<string>>();
 
     crossFileCalls.forEach((call, index) => {
       const key = `${call.from_file}->${call.to_file}`;
@@ -67,6 +68,25 @@ export const FlowCanvas = () => {
         edgeCallSequences.set(key, []);
       }
       edgeCallSequences.get(key)!.push(index);
+
+      // Track function names that caused this edge
+      if (call.from_event_id !== undefined && call.to_event_id !== undefined) {
+        const fromEvent = events[call.from_event_id];
+        const toEvent = events[call.to_event_id];
+
+        if (!edgeFunctionNames.has(key)) {
+          edgeFunctionNames.set(key, new Set());
+        }
+
+        // Add the function that made the call (filter out <module>)
+        if (fromEvent?.function_name && fromEvent.function_name !== '<module>') {
+          edgeFunctionNames.get(key)!.add(fromEvent.function_name);
+        }
+        // Also track the target function (filter out <module>)
+        if (toEvent?.function_name && toEvent.function_name !== '<module>') {
+          edgeFunctionNames.get(key)!.add(toEvent.function_name);
+        }
+      }
     });
 
     // Calculate max call count for color scaling
@@ -103,10 +123,6 @@ export const FlowCanvas = () => {
       const file = projectFiles.get(filePath);
       if (!file) return;
 
-      const coverage = file.totalLines > 0
-        ? Math.round((file.executedLines.size / file.totalLines) * 100)
-        : 0;
-
       newNodes.push({
         id: filePath,
         type: 'fileNode',
@@ -126,124 +142,122 @@ export const FlowCanvas = () => {
           },
         },
       });
-
-      // Create edge to next file
-      if (index < fileExecutionOrder.length - 1) {
-        const nextFilePath = fileExecutionOrder[index + 1];
-        const edgeKey = `${filePath}->${nextFilePath}`;
-        const callCount = edgeCallCounts.get(edgeKey) || 1;
-        const edgeId = `${filePath}-${nextFilePath}`;
-        const isSelected = selectedEdge === edgeId;
-        const hasLoop = isLoop(edgeKey);
-        const onCriticalPath = isCriticalPath(callCount);
-
-        // Build label with indicators
-        let label = `${callCount}x`;
-        if (hasLoop) label += ' 🔄';
-        if (onCriticalPath) label += ' ⚡';
-
-        newEdges.push({
-          id: edgeId,
-          source: filePath,
-          target: nextFilePath,
-          sourceHandle: 'bottom',
-          targetHandle: 'top',
-          animated: false, // Will be animated during playback
-          selected: isSelected,
-          style: {
-            stroke: isSelected ? '#0e639c' : getEdgeColor(callCount),
-            strokeWidth: isSelected ? getStrokeWidth(callCount) + 2 : getStrokeWidth(callCount),
-            strokeDasharray: hasLoop ? '8,4' : undefined,
-          },
-          label,
-          labelStyle: {
-            fill: onCriticalPath ? '#ffeb3b' : '#cccccc',
-            fontWeight: onCriticalPath ? 700 : 600,
-            fontSize: 12
-          },
-          labelBgStyle: {
-            fill: onCriticalPath ? '#1e1e1e' : '#1e1e1e',
-            fillOpacity: onCriticalPath ? 0.9 : 0.8,
-          },
-          data: {
-            callCount,
-            hasLoop,
-            onCriticalPath,
-            sequences: edgeCallSequences.get(edgeKey) || [],
-          },
-        });
-      }
     });
 
-    // Add cross-file call edges with side routing to avoid overlap
+    // Create edges ONLY for cross-file calls (actual function calls between files)
     const processedEdges = new Set<string>();
-    let crossEdgeIndex = 0;
+
     crossFileCalls.forEach((call) => {
       const edgeKey = `${call.from_file}->${call.to_file}`;
 
-      // Only add once per unique file pair
+      // Only add one edge per unique file pair
       if (processedEdges.has(edgeKey)) return;
       processedEdges.add(edgeKey);
 
-      // Check if already in execution flow
-      const existingEdge = newEdges.find(
-        e => e.source === call.from_file && e.target === call.to_file
-      );
+      const callCount = edgeCallCounts.get(edgeKey) || 1;
+      const hasLoop = isLoop(edgeKey);
+      const onCriticalPath = isCriticalPath(callCount);
+      const functionNames = edgeFunctionNames.get(edgeKey);
 
-      if (!existingEdge) {
-        const callCount = edgeCallCounts.get(edgeKey) || 1;
+      // Build label with function names and indicators
+      let label = '';
 
-        // Alternate between left and right handles for cross-file edges
-        const useLeft = crossEdgeIndex % 2 === 0;
-        crossEdgeIndex++;
+      // Show function name(s) that caused the call
+      if (functionNames && functionNames.size > 0) {
+        const funcArray = Array.from(functionNames).filter(name => name && name.trim());
 
-        const crossEdgeId = `cross-${call.from_file}-${call.to_file}`;
-        const isSelected = selectedEdge === crossEdgeId;
-        const hasLoop = isLoop(edgeKey);
-        const onCriticalPath = isCriticalPath(callCount);
-
-        // Build label with indicators
-        let label = `${callCount}x`;
-        if (hasLoop) label += ' 🔄';
-        if (onCriticalPath) label += ' ⚡';
-
-        newEdges.push({
-          id: crossEdgeId,
-          source: call.from_file,
-          target: call.to_file,
-          sourceHandle: useLeft ? 'left' : 'right',
-          targetHandle: useLeft ? 'left' : 'right',
-          type: 'smoothstep',
-          animated: false,
-          selected: isSelected,
-          style: {
-            stroke: isSelected ? '#0e639c' : getEdgeColor(callCount),
-            strokeWidth: isSelected ? getStrokeWidth(callCount) + 2 : getStrokeWidth(callCount),
-            strokeDasharray: hasLoop ? '8,4,2,4' : '5,5'
-          },
-          label,
-          labelStyle: {
-            fill: onCriticalPath ? '#ffeb3b' : '#cccccc',
-            fontWeight: onCriticalPath ? 700 : 600,
-            fontSize: 12
-          },
-          labelBgStyle: {
-            fill: onCriticalPath ? '#1e1e1e' : '#1e1e1e',
-            fillOpacity: onCriticalPath ? 0.9 : 0.8,
-          },
-          data: {
-            callCount,
-            hasLoop,
-            onCriticalPath,
-            sequences: edgeCallSequences.get(edgeKey) || [],
-          },
-        });
+        if (funcArray.length === 0) {
+          // No meaningful function names, just show call count
+          label = callCount > 1 ? `${callCount} calls` : 'call';
+        } else if (funcArray.length === 1) {
+          // Single function - show it
+          label = funcArray[0];
+          if (callCount > 1) {
+            label += ` (${callCount}×)`;
+          }
+        } else if (funcArray.length === 2) {
+          // Two functions - show both
+          label = `${funcArray[0]} → ${funcArray[1]}`;
+          if (callCount > 1) {
+            label += ` (${callCount}×)`;
+          }
+        } else {
+          // Multiple functions - show first one + count
+          label = `${funcArray[0]} +${funcArray.length - 1} more`;
+          if (callCount > 1) {
+            label += ` (${callCount}×)`;
+          }
+        }
+      } else {
+        // No function names available, just show call count
+        label = callCount > 1 ? `${callCount} calls` : 'cross-file call';
       }
+
+      // Add indicators
+      if (hasLoop) label += ' [LOOP]';
+      if (onCriticalPath) label += ' [CRITICAL]';
+
+      const edgeId = `${call.from_file}-${call.to_file}`;
+      const isSelected = selectedEdge === edgeId;
+
+      // Determine source/target positions based on file positions
+      const sourceIndex = fileExecutionOrder.indexOf(call.from_file);
+      const targetIndex = fileExecutionOrder.indexOf(call.to_file);
+
+      let sourceHandle = 'bottom';
+      let targetHandle = 'top';
+
+      // If target is before source (backward call), use side handles
+      if (targetIndex < sourceIndex) {
+        sourceHandle = 'left';
+        targetHandle = 'right';
+      }
+      // If target is after source but not adjacent, use side handles for clarity
+      else if (targetIndex - sourceIndex > 1) {
+        sourceHandle = 'right';
+        targetHandle = 'left';
+      }
+
+      newEdges.push({
+        id: edgeId,
+        source: call.from_file,
+        target: call.to_file,
+        sourceHandle,
+        targetHandle,
+        type: 'smoothstep',
+        animated: false,
+        selected: isSelected,
+        style: {
+          stroke: isSelected ? '#0e639c' : getEdgeColor(callCount),
+          strokeWidth: isSelected ? getStrokeWidth(callCount) + 2 : getStrokeWidth(callCount),
+          strokeDasharray: hasLoop ? '5,5' : undefined,
+        },
+        label,
+        labelStyle: {
+          fill: onCriticalPath ? '#ffeb3b' : '#e0e0e0',
+          fontWeight: onCriticalPath ? 700 : 600,
+          fontSize: 11,
+        },
+        labelBgStyle: {
+          fill: '#1e1e1e',
+          fillOpacity: 0.95,
+          padding: 8,
+        },
+        labelBgPadding: [8, 4] as [number, number],
+        labelBgBorderRadius: 4,
+        data: {
+          callCount,
+          hasLoop,
+          onCriticalPath,
+          functionNames: functionNames ? Array.from(functionNames) : [],
+          sequences: edgeCallSequences.get(edgeKey) || [],
+        },
+      });
     });
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [projectFiles, fileExecutionOrder, crossFileCalls, selectedFile, selectedEdge, setSelectedFile, postMessage, setNodes, setEdges]);
+  }, [projectFiles, fileExecutionOrder, crossFileCalls, selectedFile, selectedEdge, events, setSelectedFile, postMessage, setNodes, setEdges]);
 
   // Animate edges during playback with enhanced styling
   useEffect(() => {
@@ -273,9 +287,7 @@ export const FlowCanvas = () => {
       setEdges((prevEdges) =>
         prevEdges.map((edge) => {
           // Animate the edge that matches the file transition
-          const isActiveEdge =
-            (edge.source === sourceFile && edge.target === targetFile) ||
-            (edge.id === `cross-${sourceFile}-${targetFile}`);
+          const isActiveEdge = edge.source === sourceFile && edge.target === targetFile;
 
           return {
             ...edge,
@@ -414,11 +426,11 @@ export const FlowCanvas = () => {
           </div>
           <h4 style={{ marginTop: '16px' }}>Edge Indicators</h4>
           <div className="legend-item">
-            <span style={{ fontSize: '14px' }}>⚡</span>
+            <span style={{ fontSize: '10px', fontWeight: 700 }}>[CRITICAL]</span>
             <span>Critical Path (top 20%)</span>
           </div>
           <div className="legend-item">
-            <span style={{ fontSize: '14px' }}>🔄</span>
+            <span style={{ fontSize: '10px', fontWeight: 700 }}>[LOOP]</span>
             <span>Loop (3+ calls)</span>
           </div>
         </Panel>

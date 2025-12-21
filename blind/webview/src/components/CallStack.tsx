@@ -110,6 +110,10 @@ export const CallStack = () => {
                                  frame.event.file_path === currentEvent.file_path;
           const fileName = frame.event.file_path.split('/').pop() || frame.event.file_path;
 
+          const displayName = frame.event.function_name === '<module>'
+            ? `${fileName} (module)`
+            : `${frame.event.function_name}()`;
+
           return (
             <div
               key={index}
@@ -122,7 +126,7 @@ export const CallStack = () => {
               </div>
               <div className="frame-content">
                 <div className="frame-function">
-                  {frame.event.function_name}()
+                  {displayName}
                 </div>
                 <div className="frame-location">
                   <span className="frame-file">{fileName}</span>

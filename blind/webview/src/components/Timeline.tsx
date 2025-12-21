@@ -67,7 +67,7 @@ export const Timeline = () => {
           title="Go to start"
           disabled={currentEventIndex <= -1}
         >
-          ⏮
+          |◄
         </button>
         <button
           className="timeline-btn"
@@ -75,14 +75,14 @@ export const Timeline = () => {
           title="Step backward"
           disabled={currentEventIndex <= -1}
         >
-          ⏪
+          ◄
         </button>
         <button
           className="timeline-btn timeline-play-btn"
           onClick={togglePlayback}
           title={isPlaying ? 'Pause' : 'Play'}
         >
-          {isPlaying ? '⏸️' : '▶️'}
+          {isPlaying ? '❙❙' : '▶'}
         </button>
         <button
           className="timeline-btn"
@@ -90,7 +90,7 @@ export const Timeline = () => {
           title="Step forward"
           disabled={currentEventIndex >= totalEvents - 1}
         >
-          ⏩
+          ►
         </button>
         <button
           className="timeline-btn"
@@ -98,7 +98,7 @@ export const Timeline = () => {
           title="Go to end"
           disabled={currentEventIndex >= totalEvents - 1}
         >
-          ⏭
+          ►|
         </button>
 
         {/* Event Counter */}

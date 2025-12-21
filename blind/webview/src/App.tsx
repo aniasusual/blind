@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Panel, Group, Separator } from 'react-resizable-panels';
 import { FlowCanvas } from './components/FlowCanvas';
 import { Timeline } from './components/Timeline';
 import { CallStack } from './components/CallStack';
@@ -65,12 +66,33 @@ function App() {
   console.log('🎨 App returning JSX');
   return (
     <div className="app">
-      <div className="main-content">
-        <CallStack />
-        <FlowCanvas />
-        <Inspector />
-      </div>
-      <Timeline />
+      <Group id="main-group" orientation="vertical">
+        <Panel id="content-panel" defaultSize={85} minSize={40}>
+          <Group id="horizontal-group" orientation="horizontal">
+            <Panel id="callstack-panel" defaultSize={20} minSize={10}>
+              <CallStack />
+            </Panel>
+
+            <Separator className="resize-handle horizontal" />
+
+            <Panel id="canvas-panel" defaultSize={55} minSize={20}>
+              <FlowCanvas />
+            </Panel>
+
+            <Separator className="resize-handle horizontal" />
+
+            <Panel id="inspector-panel" defaultSize={25} minSize={15}>
+              <Inspector />
+            </Panel>
+          </Group>
+        </Panel>
+
+        <Separator className="resize-handle vertical" />
+
+        <Panel id="timeline-panel" defaultSize={15} minSize={8}>
+          <Timeline />
+        </Panel>
+      </Group>
     </div>
   );
 }

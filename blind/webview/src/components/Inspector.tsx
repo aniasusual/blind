@@ -1,44 +1,65 @@
 import { useMemo } from 'react';
 import { useStore } from '../store/useStore';
+import { useVSCode } from '../hooks/useVSCode';
 import './Inspector.css';
 
 export const Inspector = () => {
-  const { events, currentEventIndex } = useStore();
+  const { events, currentEventIndex, projectFiles } = useStore();
+  const { postMessage } = useVSCode(() => {});
 
   const currentEvent = currentEventIndex >= 0 ? events[currentEventIndex] : null;
 
-  // Calculate timing information
-  const timingInfo = useMemo(() => {
-    if (!currentEvent || currentEventIndex < 0) {
+  // Get code context (lines before and after current line)
+  const codeContext = useMemo(() => {
+    if (!currentEvent) return null;
+
+    const file = projectFiles.get(currentEvent.file_path);
+    if (!file) return null;
+
+    const lineIndex = currentEvent.line_number - 1;
+    const contextLines = 2; // Show 2 lines before and after
+
+    const startLine = Math.max(0, lineIndex - contextLines);
+    const endLine = Math.min(file.lines.length - 1, lineIndex + contextLines);
+
+    const lines = [];
+    for (let i = startLine; i <= endLine; i++) {
+      lines.push({
+        number: i + 1,
+        content: file.lines[i],
+        isCurrent: i === lineIndex,
+      });
+    }
+
+    return lines;
+  }, [currentEvent, projectFiles]);
+
+  // Get function arguments (for function_call events)
+  const functionArguments = useMemo(() => {
+    if (!currentEvent || !currentEvent.arguments) {
+      return [];
+    }
+
+    return Object.entries(currentEvent.arguments)
+      .filter(([key]) => !key.startsWith('__'))
+      .map(([name, value]) => ({
+        name,
+        value: formatValue(value),
+        type: typeof value,
+      }));
+  }, [currentEvent]);
+
+  // Get return value (for function_return events)
+  const returnValue = useMemo(() => {
+    if (!currentEvent || currentEvent.return_value === undefined) {
       return null;
     }
 
-    const startTime = events[0]?.timestamp || 0;
-    const currentTime = currentEvent.timestamp || 0;
-    const elapsedTime = currentTime - startTime;
-
-    // Find previous event in same file
-    let timeSincePrevious = 0;
-    for (let i = currentEventIndex - 1; i >= 0; i--) {
-      if (events[i].file_path === currentEvent.file_path) {
-        timeSincePrevious = currentTime - (events[i].timestamp || 0);
-        break;
-      }
-    }
-
-    // Calculate execution frequency for this line
-    const lineExecutions = events
-      .slice(0, currentEventIndex + 1)
-      .filter(e => e.file_path === currentEvent.file_path && e.line_number === currentEvent.line_number)
-      .length;
-
     return {
-      absoluteTime: currentTime,
-      elapsedTime,
-      timeSincePrevious,
-      lineExecutions,
+      value: formatValue(currentEvent.return_value),
+      type: typeof currentEvent.return_value,
     };
-  }, [events, currentEventIndex, currentEvent]);
+  }, [currentEvent]);
 
   // Get variables from current event
   const variables = useMemo(() => {
@@ -83,6 +104,29 @@ export const Inspector = () => {
     }
   }
 
+  // Get event type badge color
+  function getEventTypeColor(eventType: string): string {
+    if (eventType.includes('call')) return '#4aff9e';
+    if (eventType.includes('return')) return '#ffeb3b';
+    if (eventType.includes('exception')) return '#ff4a4a';
+    if (eventType.includes('loop')) return '#b084eb';
+    if (eventType.includes('conditional')) return '#ffb84a';
+    return '#4a9eff';
+  }
+
+  // Handle jump to code
+  const handleJumpToCode = () => {
+    if (!currentEvent) return;
+
+    postMessage({
+      type: 'nodeClicked',
+      data: {
+        filePath: currentEvent.file_path,
+        line: currentEvent.line_number,
+      },
+    });
+  };
+
   if (!currentEvent) {
     return (
       <div className="inspector-panel">
@@ -90,12 +134,17 @@ export const Inspector = () => {
           <h3>Inspector</h3>
         </div>
         <div className="inspector-empty">
+          <div className="empty-icon">INSPECTOR</div>
           <p>No event selected</p>
-          <span className="empty-hint">Start playback to inspect</span>
+          <span className="empty-hint">Start playback to inspect execution</span>
         </div>
       </div>
     );
   }
+
+  const fileName = currentEvent.file_path.split('/').pop() || currentEvent.file_path;
+  const isFunctionCall = currentEvent.event_type.includes('call');
+  const isFunctionReturn = currentEvent.event_type.includes('return');
 
   return (
     <div className="inspector-panel">
@@ -105,29 +154,61 @@ export const Inspector = () => {
       </div>
 
       <div className="inspector-content">
-        {/* Timing Section */}
-        {timingInfo && (
+        {/* Execution Location Section */}
+        <div className="inspector-section">
+          <div className="section-title">
+            <span>EXECUTION LOCATION</span>
+          </div>
+          <div className="section-content">
+            <div className="info-item">
+              <span className="item-label">File:</span>
+              <span className="item-value file-name" title={currentEvent.file_path}>
+                {fileName}
+              </span>
+            </div>
+            <div className="info-item">
+              <span className="item-label">Function:</span>
+              <span className="item-value code-value">
+                {currentEvent.function_name}
+                {currentEvent.function_name !== '<module>' && '()'}
+              </span>
+            </div>
+            {currentEvent.class_name && (
+              <div className="info-item">
+                <span className="item-label">Class:</span>
+                <span className="item-value code-value">{currentEvent.class_name}</span>
+              </div>
+            )}
+            <div className="info-item">
+              <span className="item-label">Line:</span>
+              <span className="item-value">{currentEvent.line_number}</span>
+            </div>
+            <button className="jump-to-code-btn" onClick={handleJumpToCode}>
+              <span className="btn-icon">▸</span>
+              Jump to Code
+            </button>
+          </div>
+        </div>
+
+        {/* Code Context Section */}
+        {codeContext && codeContext.length > 0 && (
           <div className="inspector-section">
             <div className="section-title">
-              <span className="section-icon">⏱️</span>
-              <span>Timing</span>
+              <span>CODE CONTEXT</span>
             </div>
-            <div className="section-content">
-              <div className="info-item">
-                <span className="item-label">Absolute Time:</span>
-                <span className="item-value">{timingInfo.absoluteTime.toFixed(6)}s</span>
-              </div>
-              <div className="info-item">
-                <span className="item-label">Elapsed Time:</span>
-                <span className="item-value">{timingInfo.elapsedTime.toFixed(6)}s</span>
-              </div>
-              <div className="info-item">
-                <span className="item-label">Since Previous:</span>
-                <span className="item-value">{timingInfo.timeSincePrevious.toFixed(6)}s</span>
-              </div>
-              <div className="info-item">
-                <span className="item-label">Line Executions:</span>
-                <span className="item-value">{timingInfo.lineExecutions}x</span>
+            <div className="section-content code-context-content">
+              <div className="code-lines">
+                {codeContext.map((line, index) => (
+                  <div
+                    key={index}
+                    className={`code-line ${line.isCurrent ? 'current-line' : ''}`}
+                  >
+                    <span className="line-number">{line.number}</span>
+                    <span className="line-pipe">│</span>
+                    <span className="line-content">{line.content}</span>
+                    {line.isCurrent && <span className="current-indicator">◄</span>}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -136,56 +217,93 @@ export const Inspector = () => {
         {/* Event Details Section */}
         <div className="inspector-section">
           <div className="section-title">
-            <span className="section-icon">📋</span>
-            <span>Event Details</span>
+            <span>EVENT DETAILS</span>
           </div>
           <div className="section-content">
             <div className="info-item">
               <span className="item-label">Type:</span>
-              <span className="item-value event-type-badge">{currentEvent.event_type}</span>
+              <span
+                className="event-type-badge"
+                style={{ backgroundColor: getEventTypeColor(currentEvent.event_type) }}
+              >
+                {currentEvent.event_type}
+              </span>
             </div>
             <div className="info-item">
-              <span className="item-label">Function:</span>
-              <span className="item-value code-value">{currentEvent.function_name}()</span>
+              <span className="item-label">Depth:</span>
+              <span className="item-value">
+                {currentEvent.call_stack_depth}
+                <span className="depth-indicator">
+                  {' '}{'→'.repeat(Math.min(currentEvent.call_stack_depth, 5))}
+                  {currentEvent.call_stack_depth > 5 && '...'}
+                </span>
+              </span>
             </div>
             <div className="info-item">
-              <span className="item-label">Line:</span>
-              <span className="item-value">{currentEvent.line_number}</span>
+              <span className="item-label">Scope:</span>
+              <span className="item-value code-value">{currentEvent.scope_id}</span>
             </div>
-            {currentEvent.parent_event_id !== undefined && currentEvent.parent_event_id >= 0 && (
+            {currentEvent.module_name && (
               <div className="info-item">
-                <span className="item-label">Parent Event:</span>
-                <span className="item-value">#{currentEvent.parent_event_id + 1}</span>
+                <span className="item-label">Module:</span>
+                <span className="item-value code-value">{currentEvent.module_name}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* File Details Section */}
-        <div className="inspector-section">
-          <div className="section-title">
-            <span className="section-icon">📄</span>
-            <span>File</span>
-          </div>
-          <div className="section-content">
-            <div className="info-item">
-              <span className="item-label">Path:</span>
-              <span className="item-value file-path" title={currentEvent.file_path}>
-                {currentEvent.file_path.split('/').pop()}
-              </span>
+        {/* Function Arguments Section (only for function_call events) */}
+        {isFunctionCall && functionArguments.length > 0 && (
+          <div className="inspector-section">
+            <div className="section-title">
+              <span>ARGUMENTS</span>
+              <span className="variable-count">{functionArguments.length}</span>
             </div>
-            <div className="info-item full-path">
-              <span className="full-path-value">{currentEvent.file_path}</span>
+            <div className="section-content variables-content">
+              {functionArguments.map((arg, index) => (
+                <div key={index} className="variable-item">
+                  <div className="variable-header">
+                    <span className="variable-name">{arg.name}</span>
+                    <span
+                      className="variable-type"
+                      style={{ color: getTypeColor(arg.type) }}
+                    >
+                      {arg.type}
+                    </span>
+                  </div>
+                  <div className="variable-value">
+                    {arg.value}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Return Value Section (only for function_return events) */}
+        {isFunctionReturn && returnValue && (
+          <div className="inspector-section">
+            <div className="section-title">
+              <span>RETURN VALUE</span>
+            </div>
+            <div className="section-content">
+              <div className="return-value-container">
+                <div className="return-type" style={{ color: getTypeColor(returnValue.type) }}>
+                  {returnValue.type}
+                </div>
+                <div className="return-value">
+                  {returnValue.value}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Variables Section */}
         {variables.length > 0 && (
           <div className="inspector-section">
             <div className="section-title">
-              <span className="section-icon">🔍</span>
-              <span>Variables</span>
+              <span>LOCAL VARIABLES</span>
               <span className="variable-count">{variables.length}</span>
             </div>
             <div className="section-content variables-content">
@@ -209,17 +327,17 @@ export const Inspector = () => {
           </div>
         )}
 
-        {variables.length === 0 && (
-          <div className="inspector-section">
-            <div className="section-title">
-              <span className="section-icon">🔍</span>
-              <span>Variables</span>
-            </div>
-            <div className="section-content">
-              <div className="no-data">No variables captured</div>
+        {/* Full File Path (at bottom for reference) */}
+        <div className="inspector-section">
+          <div className="section-content">
+            <div className="full-path-container">
+              <span className="full-path-label">Full Path:</span>
+              <span className="full-path-value" title={currentEvent.file_path}>
+                {currentEvent.file_path}
+              </span>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

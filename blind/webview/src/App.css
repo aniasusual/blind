@@ -20,13 +20,61 @@ body, html, #root {
 }
 
 .app {
-  display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100vh;
   background: var(--vscode-bg);
   color: var(--vscode-fg);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* React Resizable Panels Styling */
+[data-group] {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+[data-group][data-orientation="horizontal"] {
+  flex-direction: row;
+}
+
+[data-group][data-orientation="vertical"] {
+  flex-direction: column;
+}
+
+[data-panel] {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+[data-separator] {
+  flex-shrink: 0;
+  flex-grow: 0;
+  touch-action: none;
+  user-select: none;
+  background: var(--vscode-panel-border, #3c3c3c);
+  transition: background 0.2s;
+  position: relative;
+}
+
+[data-separator]:hover {
+  background: var(--vscode-button-background, #0e639c);
+}
+
+[data-separator][data-orientation="horizontal"] {
+  width: 4px;
+  cursor: col-resize;
+}
+
+[data-separator][data-orientation="vertical"] {
+  height: 4px;
+  cursor: row-resize;
 }
 
 /* Toolbar */
@@ -91,14 +139,45 @@ body, html, #root {
   color: #555;
 }
 
-/* Main content - Three panel layout */
-.main-content {
-  flex: 1;
-  overflow: hidden;
+/* Resize Handles - for Separators */
+[data-separator] {
+  background: var(--vscode-panel-border, #3c3c3c);
+  transition: background 0.2s;
   position: relative;
-  display: flex;
-  flex-direction: row;
-  height: calc(100vh - 120px); /* viewport - timeline */
+}
+
+[data-separator]:hover {
+  background: var(--vscode-button-background, #0e639c);
+}
+
+[data-separator][data-orientation="horizontal"] {
+  width: 4px;
+  cursor: col-resize;
+}
+
+[data-separator][data-orientation="vertical"] {
+  height: 4px;
+  cursor: row-resize;
+}
+
+/* Legacy class-based styles for backward compatibility */
+.resize-handle {
+  background: var(--vscode-panel-border, #3c3c3c);
+  transition: background 0.2s;
+}
+
+.resize-handle:hover {
+  background: var(--vscode-button-background, #0e639c);
+}
+
+.resize-handle.horizontal {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resize-handle.vertical {
+  height: 4px;
+  cursor: row-resize;
 }
 
 /* Empty state */

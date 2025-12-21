@@ -927,38 +927,102 @@ function FlowCanvas() {
         return flowNodes;
     }, [projectFiles, fileExecutionOrder]);
 
-    // Convert cross-file calls to edges
+    // Convert cross-file calls to edges with function names
     const edges = useMemo(() => {
         const flowEdges: Edge[] = [];
 
-        // Count calls between files
+        // Track call information per file pair
         const callCounts = new Map<string, number>();
+        const functionNames = new Map<string, Set<string>>();
 
         crossFileCalls.forEach(call => {
             const key = `${call.from_file}->${call.to_file}`;
             callCounts.set(key, (callCounts.get(key) || 0) + 1);
+
+            // Extract function names from events (filter out <module>)
+            const fromEvent = events[call.from_event_id];
+            const toEvent = events[call.to_event_id];
+
+            if (!functionNames.has(key)) {
+                functionNames.set(key, new Set());
+            }
+
+            // Filter out <module> (top-level code in Python)
+            if (fromEvent?.function_name && fromEvent.function_name !== '<module>') {
+                functionNames.get(key)!.add(fromEvent.function_name);
+            }
+            if (toEvent?.function_name && toEvent.function_name !== '<module>') {
+                functionNames.get(key)!.add(toEvent.function_name);
+            }
         });
 
-        // Create edges with thickness based on frequency
-        callCounts.forEach((count, key) => {
-            const [from, to] = key.split('->');
+        // Create one edge per unique file pair
+        const processedPairs = new Set<string>();
+
+        crossFileCalls.forEach(call => {
+            const key = `${call.from_file}->${call.to_file}`;
+
+            if (processedPairs.has(key)) return;
+            processedPairs.add(key);
+
+            const count = callCounts.get(key) || 1;
+            const funcs = functionNames.get(key);
+
+            // Build label with function name(s) + call count
+            let label = '';
+            if (funcs && funcs.size > 0) {
+                const funcArray = Array.from(funcs).filter(name => name && name.trim());
+
+                if (funcArray.length === 0) {
+                    // No meaningful function names
+                    label = count > 1 ? `${count} calls` : 'call';
+                } else if (funcArray.length === 1) {
+                    // Single function
+                    label = funcArray[0];
+                    if (count > 1) label += ` (${count}×)`;
+                } else if (funcArray.length === 2) {
+                    // Two functions - show both
+                    label = `${funcArray[0]} → ${funcArray[1]}`;
+                    if (count > 1) label += ` (${count}×)`;
+                } else {
+                    // Multiple functions
+                    label = `${funcArray[0]} +${funcArray.length - 1} more`;
+                    if (count > 1) label += ` (${count}×)`;
+                }
+            } else {
+                // No function names available
+                label = count > 1 ? `${count} calls` : 'cross-file call';
+            }
+
+            // Add indicators
+            if (count > 2) label += ' 🔄';  // Loop
+            if (count / Math.max(...callCounts.values()) > 0.8) label += ' ⚡';  // Hot path
 
             flowEdges.push({
                 id: key,
-                source: from,
-                target: to,
+                source: call.from_file,
+                target: call.to_file,
                 type: 'smoothstep',
                 animated: false,
+                label,
                 style: {
                     stroke: '#666',
-                    strokeWidth: Math.min(count, 10)
+                    strokeWidth: 1 + (count / Math.max(...callCounts.values()) * 3),
+                    strokeDasharray: count > 2 ? '5,5' : undefined
                 },
-                label: count > 1 ? `${count}×` : undefined
+                labelStyle: {
+                    fill: '#e0e0e0',
+                    fontSize: 11,
+                },
+                labelBgStyle: {
+                    fill: '#1e1e1e',
+                    fillOpacity: 0.95,
+                }
             });
         });
 
         return flowEdges;
-    }, [crossFileCalls]);
+    }, [crossFileCalls, events]);
 
     // Animate current edge during playback
     useEffect(() => {
@@ -1216,12 +1280,45 @@ function CallStack() {
 
 #### Inspector (`components/Inspector.tsx`)
 
+**Priority 1 Features Implemented:**
+- ✅ Current line content (actual code being executed)
+- ✅ Code context (2 lines before and after)
+- ✅ Function arguments (for function_call events)
+- ✅ Return value (for function_return events)
+- ✅ Jump to code button (navigate to VS Code)
+- ✅ Call stack depth visualization
+
 ```typescript
 function Inspector() {
     const events = useStore(state => state.events);
     const currentEventIndex = useStore(state => state.currentEventIndex);
+    const projectFiles = useStore(state => state.projectFiles);
 
     const currentEvent = currentEventIndex >= 0 ? events[currentEventIndex] : null;
+
+    // Get code context (lines before and after current line)
+    const codeContext = useMemo(() => {
+        if (!currentEvent) return null;
+
+        const file = projectFiles.get(currentEvent.file_path);
+        if (!file) return null;
+
+        const lineIndex = currentEvent.line_number - 1;
+        const contextLines = 2; // 2 lines before and after
+
+        const lines = [];
+        for (let i = Math.max(0, lineIndex - contextLines);
+             i <= Math.min(file.lines.length - 1, lineIndex + contextLines);
+             i++) {
+            lines.push({
+                number: i + 1,
+                content: file.lines[i],
+                isCurrent: i === lineIndex,
+            });
+        }
+
+        return lines;
+    }, [currentEvent, projectFiles]);
 
     if (!currentEvent) {
         return <div className="inspector">No event selected</div>;
@@ -1625,27 +1722,43 @@ const nodes: Node[] = [
     }
 ];
 
-// Edges = Cross-file calls
+// Edges = Cross-file calls ONLY (when execution transfers between files)
 const edges: Edge[] = [
     {
-        id: 'file1->file2',
+        id: 'file1.py-file2.py',
         source: '/path/to/file1.py',
         target: '/path/to/file2.py',
         animated: true,  // During playback
-        style: { strokeWidth: 5 }  // Based on call frequency
+        label: 'my_function (3×) ⚡',  // Function name + call count + indicators
+        style: {
+            strokeWidth: 3,  // Based on call frequency
+            strokeDasharray: hasLoop ? '5,5' : undefined  // Dashed for loops
+        }
     }
 ];
 
 <ReactFlow nodes={nodes} edges={edges} />
 ```
 
+**Edge Display Logic (Important!):**
+- **Only show edges for actual cross-file calls** - Not sequential execution
+- **One edge per file pair** - Multiple calls grouped into single edge
+- **Function names on labels** - Shows which function(s) caused the transfer
+- **Call count** - Displays how many times this path was taken
+- **Smart routing** - Uses appropriate handles based on file positions:
+  - Adjacent files: bottom → top
+  - Backward calls: left → right
+  - Non-adjacent: right → left
+
 **Features we use:**
 - **Custom nodes** - FileNode shows code, not just labels
-- **Handles** - Connection points on each side of node
-- **Edge styling** - Thickness = frequency, color = type
-- **Animation** - Edges animate during playback
-- **MiniMap** - Overview of entire graph
+- **Handles** - Connection points on each side of node (top/bottom/left/right)
+- **Edge styling** - Thickness = frequency, color = hot/cold path, dashed = loops
+- **Edge labels** - Function name + call count + indicators (🔄 loop, ⚡ critical path)
+- **Animation** - Edges animate during playback when execution transfers
+- **MiniMap** - Overview of entire graph with color-coded coverage
 - **Controls** - Zoom, pan, fit view
+- **Smoothstep edges** - Curved edges for better readability
 
 ### 6. Playback System
 
