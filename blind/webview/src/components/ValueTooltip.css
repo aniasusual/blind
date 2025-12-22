@@ -1,0 +1,129 @@
+.value-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.value-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  z-index: 10000;
+  background: var(--vscode-editorHoverWidget-background, #252526);
+  border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  min-width: 300px;
+  max-width: 500px;
+  max-height: 400px;
+  overflow: hidden;
+  animation: tooltipFadeIn 0.15s ease-out;
+  pointer-events: auto;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--vscode-editorHoverWidget-statusBarBackground, #2c2c2d);
+  border-bottom: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+}
+
+.tooltip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.tooltip-type {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-value {
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: var(--vscode-editorHoverWidget-background, #252526);
+}
+
+.tooltip-value pre {
+  margin: 0;
+  font-family: var(--vscode-editor-font-family, 'Monaco', 'Menlo', monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.tooltip-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--vscode-editorHoverWidget-statusBarBackground, #2c2c2d);
+  border-top: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+}
+
+.tooltip-button {
+  flex: 1;
+  padding: 6px 12px;
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #ffffff);
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--vscode-font-family, sans-serif);
+}
+
+.tooltip-button:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  transform: translateY(-1px);
+}
+
+.tooltip-button:active {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling */
+.tooltip-value::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tooltip-value::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, #424242);
+}
+
+.tooltip-value::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-hoverBackground, #4f4f4f);
+  border-radius: 4px;
+}
+
+.tooltip-value::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-activeBackground, #646464);
+}

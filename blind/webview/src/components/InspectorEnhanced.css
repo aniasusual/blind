@@ -1,0 +1,487 @@
+.inspector-panel-enhanced {
+  width: 100%;
+  height: 100%;
+  background: var(--vscode-sideBar-background, #252526);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.inspector-header {
+  padding: 12px 16px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inspector-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inspector-badge {
+  font-size: 11px;
+  color: var(--vscode-badge-foreground, #ffffff);
+  background: var(--vscode-button-background, #0e639c);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.inspector-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--vscode-descriptionForeground, #999);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.inspector-empty .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.inspector-empty p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.empty-hint {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.inspector-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+/* Collapsible Section */
+.inspector-section {
+  margin-bottom: 2px;
+}
+
+.section-title-collapsible {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.section-title-collapsible:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.section-toggle {
+  font-size: 10px;
+  color: var(--vscode-foreground, #cccccc);
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.section-title-text {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--vscode-descriptionForeground, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.section-count {
+  font-size: 10px;
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.section-content {
+  padding: 12px 16px;
+}
+
+/* Call Stack List */
+.call-stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stack-frame-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.stack-frame-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.stack-frame-item.current-frame {
+  background: rgba(14, 99, 156, 0.2);
+  border-left: 3px solid #0e639c;
+}
+
+.frame-depth-indicator {
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.depth-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(74, 255, 158, 0.2);
+  color: #4aff9e;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid rgba(74, 255, 158, 0.4);
+}
+
+.frame-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.frame-function {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  font-family: var(--vscode-editor-font-family, monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frame-location {
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground, #999);
+  font-family: var(--vscode-editor-font-family, monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.current-frame-marker {
+  position: absolute;
+  right: 8px;
+  color: #0e639c;
+  font-size: 14px;
+  font-weight: bold;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Info Items */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.item-label {
+  color: var(--vscode-descriptionForeground, #999);
+  font-weight: 500;
+}
+
+.item-value {
+  color: var(--vscode-foreground, #cccccc);
+  font-weight: 600;
+  font-family: var(--vscode-editor-font-family, monospace);
+  text-align: right;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-value {
+  color: #dcdcaa;
+}
+
+.event-type-badge {
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.file-name {
+  color: #4ec9b0;
+  font-weight: 600;
+}
+
+.depth-indicator {
+  color: #569cd6;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+.jump-to-code-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.jump-to-code-btn:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+.jump-to-code-btn:active {
+  background: var(--vscode-button-activeBackground, #0d5a8f);
+}
+
+.btn-icon {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Code Context */
+.code-lines {
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-radius: 4px;
+  padding: 8px 0;
+  font-family: var(--vscode-editor-font-family, 'Consolas', 'Monaco', 'Courier New', monospace);
+}
+
+.code-line {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 18px;
+  transition: background 0.2s;
+}
+
+.code-line:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.code-line.current-line {
+  background: rgba(74, 255, 158, 0.1);
+  border-left: 3px solid #4aff9e;
+  padding-left: 5px;
+}
+
+.line-number {
+  min-width: 32px;
+  text-align: right;
+  color: var(--vscode-editorLineNumber-foreground, #858585);
+  font-weight: 500;
+  user-select: none;
+}
+
+.code-line.current-line .line-number {
+  color: #4aff9e;
+  font-weight: 700;
+}
+
+.line-pipe {
+  margin: 0 8px;
+  color: var(--vscode-panel-border, #3c3c3c);
+}
+
+.line-content {
+  flex: 1;
+  color: var(--vscode-editor-foreground, #d4d4d4);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.current-indicator {
+  margin-left: 8px;
+  color: #4aff9e;
+  font-weight: bold;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Variables */
+.variables-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.variable-item {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  border-left: 3px solid var(--vscode-panel-border, #3c3c3c);
+}
+
+.variable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.variable-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-foreground, #cccccc);
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.variable-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.variable-value {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground, #999);
+  font-family: var(--vscode-editor-font-family, monospace);
+  padding: 6px;
+  background: var(--vscode-input-background, #3c3c3c);
+  border-radius: 3px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.no-data {
+  text-align: center;
+  color: var(--vscode-descriptionForeground, #999);
+  font-size: 11px;
+  font-style: italic;
+  padding: 16px;
+}
+
+/* Return Value */
+.return-value-container {
+  padding: 8px;
+  background: rgba(255, 235, 59, 0.05);
+  border-left: 3px solid #ffeb3b;
+  border-radius: 4px;
+}
+
+.return-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.return-value {
+  font-size: 11px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  padding: 6px;
+  background: var(--vscode-input-background, #3c3c3c);
+  border-radius: 3px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Full Path */
+.full-path-container {
+  padding: 8px;
+  background: var(--vscode-input-background, #3c3c3c);
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.full-path-value {
+  color: var(--vscode-descriptionForeground, #999);
+  font-family: var(--vscode-editor-font-family, monospace);
+  word-break: break-all;
+}
+
+/* Scrollbars */
+.inspector-content::-webkit-scrollbar,
+.variables-content::-webkit-scrollbar,
+.variable-value::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.inspector-content::-webkit-scrollbar-track,
+.variables-content::-webkit-scrollbar-track,
+.variable-value::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, #424242);
+}
+
+.inspector-content::-webkit-scrollbar-thumb,
+.variables-content::-webkit-scrollbar-thumb,
+.variable-value::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-hoverBackground, #4f4f4f);
+  border-radius: 3px;
+}
+
+.inspector-content::-webkit-scrollbar-thumb:hover,
+.variables-content::-webkit-scrollbar-thumb:hover,
+.variable-value::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-activeBackground, #646464);
+}

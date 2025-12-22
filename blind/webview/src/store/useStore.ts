@@ -1,41 +1,27 @@
 import { create } from 'zustand';
 import { TraceEvent, ProjectFile, CrossFileCall } from '../types';
 
-// Enhanced App State for project-wide tracking
-interface EnhancedAppState {
-  // Original state
+// App State for execution flow tracking
+interface AppState {
+  // Core state
   events: TraceEvent[];
   isPaused: boolean;
-  showAllLines: boolean;
-  autoScroll: boolean;
-  selectedNodeId: string | null;
-
-  // Project-wide state
   projectFiles: Map<string, ProjectFile>;
-  fileExecutionOrder: string[];
   crossFileCalls: CrossFileCall[];
-  selectedFile: string | null;
-  selectedEdge: string | null;
 
   // Playback state
   currentEventIndex: number;
   isPlaying: boolean;
   playbackSpeed: number;
 
-  // Original actions
+  // Core actions
   addEvent: (event: TraceEvent) => void;
   clearEvents: () => void;
   togglePause: () => void;
-  setShowAllLines: (show: boolean) => void;
-  setAutoScroll: (auto: boolean) => void;
-  setSelectedNode: (id: string | null) => void;
 
-  // New project-wide actions
+  // File metadata actions
   addFileMetadata: (filePath: string, relativePath: string, code: string, lines: string[], totalLines: number, timestamp: number) => void;
   addCrossFileCall: (call: CrossFileCall) => void;
-  markLineExecuted: (filePath: string, lineNumber: number) => void;
-  setSelectedFile: (filePath: string | null) => void;
-  setSelectedEdge: (edgeId: string | null) => void;
   clearProjectData: () => void;
 
   // Playback actions
@@ -48,27 +34,19 @@ interface EnhancedAppState {
   goToEnd: () => void;
 }
 
-export const useStore = create<EnhancedAppState>()((set, get) => ({
-  // Original state
+export const useStore = create<AppState>()((set, get) => ({
+  // Core state
   events: [],
   isPaused: false,
-  showAllLines: false,
-  autoScroll: true,
-  selectedNodeId: null,
-
-  // Project-wide state
   projectFiles: new Map(),
-  fileExecutionOrder: [],
   crossFileCalls: [],
-  selectedFile: null,
-  selectedEdge: null,
 
   // Playback state
   currentEventIndex: -1,
   isPlaying: false,
   playbackSpeed: 1,
 
-  // Original actions
+  // Core actions
   addEvent: (event: TraceEvent) => {
     const state = get();
     const newEvents = [...state.events, event];
@@ -92,21 +70,12 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
   },
 
   clearEvents: () =>
-    set({ events: [], selectedNodeId: null }),
+    set({ events: [] }),
 
   togglePause: () =>
     set((state) => ({ isPaused: !state.isPaused })),
 
-  setShowAllLines: (show: boolean) =>
-    set({ showAllLines: show }),
-
-  setAutoScroll: (auto: boolean) =>
-    set({ autoScroll: auto }),
-
-  setSelectedNode: (id: string | null) =>
-    set({ selectedNodeId: id }),
-
-  // New project-wide actions
+  // File metadata actions
   addFileMetadata: (filePath: string, relativePath: string, code: string, lines: string[], totalLines: number, timestamp: number) => {
     const state = get();
     if (!state.projectFiles.has(filePath)) {
@@ -122,11 +91,8 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
         firstSeen: timestamp,
       });
 
-      const newFileExecutionOrder = [...state.fileExecutionOrder, filePath];
-
       set({
         projectFiles: newProjectFiles,
-        fileExecutionOrder: newFileExecutionOrder,
       });
     }
   },
@@ -136,38 +102,11 @@ export const useStore = create<EnhancedAppState>()((set, get) => ({
     set({ crossFileCalls: [...state.crossFileCalls, call] });
   },
 
-  markLineExecuted: (filePath: string, lineNumber: number) => {
-    const state = get();
-    const file = state.projectFiles.get(filePath);
-    if (file) {
-      const newProjectFiles = new Map(state.projectFiles);
-      const newExecutedLines = new Set(file.executedLines);
-      newExecutedLines.add(lineNumber);
-
-      newProjectFiles.set(filePath, {
-        ...file,
-        executedLines: newExecutedLines,
-      });
-
-      set({ projectFiles: newProjectFiles });
-    }
-  },
-
-  setSelectedFile: (filePath: string | null) =>
-    set({ selectedFile: filePath }),
-
-  setSelectedEdge: (edgeId: string | null) =>
-    set({ selectedEdge: edgeId }),
-
   clearProjectData: () =>
     set({
       events: [],
       projectFiles: new Map(),
-      fileExecutionOrder: [],
       crossFileCalls: [],
-      selectedNodeId: null,
-      selectedFile: null,
-      selectedEdge: null,
       currentEventIndex: -1,
       isPlaying: false,
     }),

@@ -1,0 +1,243 @@
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--vscode-editor-background, #1e1e1e);
+  border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+}
+
+/* Search Bar */
+.filter-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--vscode-input-background, #3c3c3c);
+  border: 1px solid var(--vscode-input-border, #3c3c3c);
+  border-radius: 4px;
+  padding: 6px 8px;
+  transition: border-color 0.2s;
+}
+
+.filter-search-bar:focus-within {
+  border-color: var(--vscode-focusBorder, #007acc);
+}
+
+.search-icon {
+  font-size: 14px;
+  color: var(--vscode-descriptionForeground, #999);
+  flex-shrink: 0;
+}
+
+.filter-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--vscode-input-foreground, #cccccc);
+  font-size: 12px;
+  font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+}
+
+.filter-search-input::placeholder {
+  color: var(--vscode-input-placeholderForeground, #666);
+}
+
+.clear-search-btn {
+  background: none;
+  border: none;
+  color: var(--vscode-descriptionForeground, #999);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.clear-search-btn:hover {
+  color: var(--vscode-foreground, #cccccc);
+}
+
+/* Filter Toggle Row */
+.filter-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.filter-toggle-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+.toggle-icon {
+  font-size: 10px;
+}
+
+.toggle-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-count-badge {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.clear-all-btn {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.clear-all-btn:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+/* Advanced Filters */
+.filter-advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--vscode-descriptionForeground, #999);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-section-title.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.filter-section-title.clickable:hover {
+  color: var(--vscode-foreground, #cccccc);
+}
+
+.filter-count-badge-small {
+  background: var(--vscode-badge-background, #4d4d4d);
+  color: var(--vscode-badge-foreground, #ffffff);
+  padding: 1px 4px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--vscode-foreground, #cccccc);
+  cursor: pointer;
+  padding: 4px 4px 4px 8px;
+  border-radius: 3px;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.filter-checkbox-label:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--vscode-button-background, #0e639c);
+}
+
+.filter-checkbox-label span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Event Types Grid */
+.filter-event-types {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* File List */
+.filter-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.filter-file-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-file-list::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbarSlider-background, #424242);
+}
+
+.filter-file-list::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-hoverBackground, #4f4f4f);
+  border-radius: 3px;
+}
+
+.filter-file-list::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-activeBackground, #646464);
+}

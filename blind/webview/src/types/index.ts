@@ -101,25 +101,5 @@ export interface Message {
   data?: any;
 }
 
-// Node Data for React Flow
-export interface FlowNodeData {
-  event: TraceEvent;
-  code: string;
-  isEditing: boolean;
-  isExpanded: boolean;
-}
-
-// Store State
-export interface AppState {
-  events: TraceEvent[];
-  isPaused: boolean;
-  showAllLines: boolean;
-  autoScroll: boolean;
-  selectedNodeId: string | null;
-  addEvent: (event: TraceEvent) => void;
-  clearEvents: () => void;
-  togglePause: () => void;
-  setShowAllLines: (show: boolean) => void;
-  setAutoScroll: (auto: boolean) => void;
-  setSelectedNode: (id: string | null) => void;
-}
+// Note: AppState is now defined in store/useStore.ts
+// FlowNodeData interface removed (react-flow no longer used)

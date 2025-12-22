@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useStore } from '../store/useStore';
+import { ExportPanel } from './ExportPanel';
 import './Timeline.css';
 
 export const Timeline = () => {
@@ -119,6 +120,9 @@ export const Timeline = () => {
             </button>
           ))}
         </div>
+
+        {/* Export Panel */}
+        <ExportPanel />
 
         {/* Current Event Info */}
         {currentEvent && (
